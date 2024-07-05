@@ -9,6 +9,7 @@ using System.Text;
 
 namespace BackEnd.Api.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -61,6 +62,11 @@ namespace BackEnd.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Login
+        /// </summary>
+        /// <param name="loginDto"></param>
+        /// <returns></returns>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
