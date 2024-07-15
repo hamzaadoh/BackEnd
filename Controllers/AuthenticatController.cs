@@ -1,4 +1,5 @@
-﻿using BackEnd.Api.Data;
+using BackEnd.Api.Config;
+using BackEnd.Api.Data;
 using BackEnd.Api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,18 +10,16 @@ using System.Text;
 
 namespace BackEnd.Api.Controllers
 {
-
     [ApiController]
     [Route("[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthenticatController : ControllerBase
     {
-
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _config;
 
-        // Constructor
-        public AuthController(
+        //// Constructor
+        public AuthenticatController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IConfiguration config)
@@ -30,11 +29,11 @@ namespace BackEnd.Api.Controllers
             _config = config;
         }
 
-        /// <summary>
-        /// Register
-        /// </summary>
-        /// <param name="registerDto"></param>
-        /// <returns></returns>
+        ///// <summary>
+        ///// Register
+        ///// </summary>
+        ///// <param name="registerDto"></param>
+        ///// <returns></returns>
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
@@ -62,11 +61,11 @@ namespace BackEnd.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Login
-        /// </summary>
-        /// <param name="loginDto"></param>
-        /// <returns></returns>
+        ///// <summary>
+        ///// Login
+        ///// </summary>
+        ///// <param name="loginDto"></param>
+        ///// <returns></returns>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
@@ -94,8 +93,10 @@ namespace BackEnd.Api.Controllers
 
         }
 
+
         public string GenerateJwtToken(ApplicationUser user)
         {
+            // Define the claims for the token
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
@@ -103,17 +104,23 @@ namespace BackEnd.Api.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
 
+            // Retrieve the security key from configuration and ensure it is sufficiently long
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+
+            // Create signing credentials using the security key and HMACSHA256 algorithm
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            // Create the token
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Issuer"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
+                issuer: _config["Jwt:Issuer"], // Set the issuer
+                audience: _config["Jwt:Issuer"], // Set the audience
+                claims: claims, // Add claims
+                expires: DateTime.Now.AddMinutes(30), // Set the token expiration time
+                signingCredentials: creds); // Add signing credentials
 
+            // Generate the token string
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }
